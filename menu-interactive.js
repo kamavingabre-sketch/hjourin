@@ -48,14 +48,13 @@ export const sendInteractiveOrFallback = async (sock, jid, interactivePayload, f
     logger.warn('INTERACTIVE', `Device ${jid} tidak support interactive message, fallback ke teks`, err.message);
     try {
       if (opts.image) {
-        // Coba dengan gambar + caption teks
         await sock.sendMessage(jid, {
           image: opts.image,
-          caption: fallbackText,
+          caption: fallbackText || '❓ Ketik *menu* untuk melihat pilihan layanan.',
           mimetype: 'image/jpeg'
         });
       } else {
-        await sock.sendMessage(jid, { text: fallbackText });
+        await sock.sendMessage(jid, { text: fallbackText || '❓ Ketik *menu* untuk melihat pilihan layanan.' });
       }
       await delay(100);
     } catch (err2) {
@@ -145,7 +144,7 @@ export const sendMenuUtamaInteractive = async (sock, jid, name) => {
   const listPayload = buildMenuUtamaListPayload();
 
   // Coba list message
-  const success = await sendInteractiveOrFallback(sock, jid, listPayload, null);
+  const success = await sendInteractiveOrFallback(sock, jid, listPayload, MENU_UTAMA_FALLBACK);
 
   if (!success) {
     // Fallback: gambar + teks
