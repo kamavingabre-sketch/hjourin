@@ -11,7 +11,7 @@ import logger from './logger.js';
 // ─── Delay Helper ────────────────────────────────────────────
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
-// ─── Fetch image buffer ───────────────────────────────────────
+// ─── Fetch image buffer dari URL ─────────────────────────────
 const fetchImageBuffer = async (url) => {
   try {
     const res = await axios.get(url, { responseType: 'arraybuffer', timeout: 15000 });
@@ -138,34 +138,34 @@ Halo! Saya siap membantu Anda dengan berbagai layanan administrasi kecamatan.
 _Hallo Johor — Hadir untuk Warga Medan Johor_`;
 
 /**
- * Kirim menu utama: coba list message, fallback ke gambar+teks
+ * Kirim menu utama:
+ * 1. Kirim gambar dulu (tanpa caption) — works di semua device
+ * 2. Kirim list message (device support) atau teks biasa (fallback)
  */
 export const sendMenuUtamaInteractive = async (sock, jid, name) => {
-  const listPayload = buildMenuUtamaListPayload();
+  // Step 1: Kirim gambar header dulu (terpisah dari list/teks)
+  try {
+    const imgBuffer = await fetchImageBuffer(MENU_IMAGE_URL);
+    if (imgBuffer) {
+      await sock.sendMessage(jid, {
+        image: imgBuffer,
+        caption: '🏛️ *HALLO JOHOR* — Bot Layanan Kecamatan Medan Johor',
+        mimetype: 'image/jpeg'
+      });
+      await delay(500);
+    }
+  } catch (err) {
+    logger.warn('MENU', `Gagal kirim gambar menu → ${name}: ${err.message}`);
+  }
 
-  // Coba list message
+  // Step 2: Kirim list message, fallback ke teks jika tidak support
+  const listPayload = buildMenuUtamaListPayload();
   const success = await sendInteractiveOrFallback(sock, jid, listPayload, MENU_UTAMA_FALLBACK);
 
-  if (!success) {
-    // Fallback: gambar + teks
-    try {
-      const imgBuffer = await fetchImageBuffer(MENU_IMAGE_URL);
-      if (imgBuffer) {
-        await sock.sendMessage(jid, {
-          image: imgBuffer,
-          caption: MENU_UTAMA_FALLBACK,
-          mimetype: 'image/jpeg'
-        });
-      } else {
-        await sock.sendMessage(jid, { text: MENU_UTAMA_FALLBACK });
-      }
-      logger.warn('MENU', `Fallback teks menu utama → ${name}`);
-    } catch (err) {
-      logger.error('MENU', `Gagal kirim fallback menu utama ke ${jid}`, err.message);
-      try { await sock.sendMessage(jid, { text: MENU_UTAMA_FALLBACK }); } catch {}
-    }
-  } else {
+  if (success) {
     logger.send(jid, `Menu utama interactive (list) → ${name}`);
+  } else {
+    logger.warn('MENU', `Fallback teks menu utama → ${name}`);
   }
 
   await delay(300);
