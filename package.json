@@ -1,0 +1,40 @@
+{
+  "name": "hallo-johor-bot",
+  "version": "1.0.0",
+  "description": "WhatsApp Bot Layanan Kecamatan Medan Johor",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node start.js",
+    "bot": "node index.js",
+    "web": "node web.js",
+    "dev": "node start.js",
+    "install:baileys": "cd baileys-src && npm install --legacy-peer-deps"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@supabase/supabase-js": "^2.45.0",
+    "@adiwajshing/keyed-db": "^0.2.4",
+    "@cacheable/node-cache": "^1.4.0",
+    "async-mutex": "^0.5.0",
+    "axios": "^1.7.2",
+    "cache-manager": "4.0.1",
+    "chalk": "^4.1.2",
+    "cheerio": "^1.0.0",
+    "exceljs": "^4.4.0",
+    "fflate": "^0.8.2",
+    "futoin-hkdf": "^1.5.1",
+    "libphonenumber-js": "^1.10.20",
+    "lodash": "^4.17.21",
+    "music-metadata": "^7.12.3",
+    "node-cache": "^5.1.2",
+    "node-fetch": "^2.6.1",
+    "pino": "^9.3.2",
+    "protobufjs": "^7.2.4",
+    "uuid": "^9.0.0",
+    "ws": "^8.13.0"
+  }
+}
