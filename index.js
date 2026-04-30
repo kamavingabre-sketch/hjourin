@@ -518,7 +518,7 @@ async function startBot() {
       creds: state.creds,
       keys: makeCacheableSignalKeyStore(state.keys, pinoLogger),
     },
-    browser: Browsers.ubuntu('Chrome'),
+    browser: Browsers('Chrome'),
     syncFullHistory: false,
     markOnlineOnConnect: true,
     generateHighQualityLinkPreview: false,
