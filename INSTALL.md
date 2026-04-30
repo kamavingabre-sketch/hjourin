@@ -3,65 +3,60 @@
 ## Perubahan yang Dilakukan
 
 ### 1. Custom Pairing Code `HALL-OJHR`
-Bot sekarang menggunakan **OurinGlitch Baileys** yang support custom pairing code.
-Saat login pertama kali, kode pairing akan selalu tampil sebagai **`HALL-OJHR`** — tidak acak lagi.
+Bot menggunakan **OurinGlitch Baileys** yang support custom pairing code.
+Kode pairing akan selalu tampil sebagai **`HALL-OJHR`** — tidak acak lagi.
 
-### 2. Menu Interaktif (List Message + Fallback)
+### 2. Menu Interaktif (List Message + Fallback Otomatis)
 Menu utama, persyaratan surat, pengaduan, kelurahan, dan wisata sekarang menggunakan
 **WhatsApp List Message** — tampil sebagai tombol interaktif yang bisa ditap.
 
-Untuk device yang tidak support (WhatsApp versi lama / WhatsApp Web), bot akan otomatis
-**fallback ke teks biasa** — tidak ada error, pengguna tetap bisa menggunakan bot.
+Untuk device yang tidak support, bot otomatis **fallback ke teks biasa** — tidak error.
 
 ---
 
-## Struktur File Baru
+## Struktur File Baru/Berubah
 
 ```
 hallojohor/
-├── baileys/              ← ESM wrapper untuk OurinGlitch
-│   └── index.js
-├── baileys-src/          ← OurinGlitch Baileys (source)
-│   ├── lib/
-│   ├── WAProto/
-│   └── package.json
-├── menu-interactive.js   ← File BARU: helpers list/button message
+├── .npmrc                ← BARU: force legacy-peer-deps untuk npm install
+├── baileys/
+│   └── index.js          ← ESM wrapper untuk OurinGlitch
+├── baileys-src/          ← OurinGlitch Baileys (source CJS)
+├── menu-interactive.js   ← BARU: helpers list/button message + fallback
 ├── handler.js            ← DIUPDATE: pakai interactive menu
-├── index.js              ← DIUPDATE: custom pairing code
-└── package.json          ← DIUPDATE: deps OurinGlitch
+├── index.js              ← DIUPDATE: custom pairing code HALL-OJHR
+└── package.json          ← DIUPDATE: termasuk deps OurinGlitch + libsignal alias
 ```
 
 ---
 
-## Cara Instalasi
+## Cara Deploy
 
-### Step 1 — Install Dependencies Utama
+### Lokal
 ```bash
+# 1. Install (cukup sekali, .npmrc sudah handle --legacy-peer-deps)
 npm install
-```
 
-### Step 2 — Install Dependencies OurinGlitch Baileys
-```bash
-cd baileys-src
-npm install --legacy-peer-deps
-cd ..
-```
-
-### Step 3 — Hapus Auth Lama (Wajib!)
-```bash
+# 2. Hapus auth lama (WAJIB karena ganti library Baileys)
 rm -rf auth_info_baileys
-```
-> ⚠️ Wajib hapus auth lama karena ganti library Baileys.
-> Bot perlu login ulang dengan pairing code **HALL-OJHR**.
 
-### Step 4 — Jalankan Bot
-```bash
+# 3. Jalankan
 npm start
-# atau
-node index.js
 ```
 
-### Step 5 — Login dengan Pairing Code
+### Railway
+Cukup push — Railway akan `npm install` otomatis.
+File `.npmrc` sudah memastikan `legacy-peer-deps=true`.
+
+**Wajib set env var:**
+| Variable | Nilai |
+|----------|-------|
+| `PHONE_NUMBER` | `628xxxxxxxxxx` |
+
+---
+
+## Login dengan Pairing Code HALL-OJHR
+
 Saat terminal menampilkan:
 ```
 ╔══════════════════════════════╗
@@ -72,74 +67,37 @@ Saat terminal menampilkan:
 ╚══════════════════════════════╝
 ```
 
-1. Buka WhatsApp di HP
-2. Tap 3 titik → **Perangkat Tertaut**
-3. Tap **"Tautkan Perangkat"**
-4. Masukkan kode: **`HALL-OJHR`**
+1. Buka WhatsApp → 3 titik → **Perangkat Tertaut**
+2. Tap **"Tautkan Perangkat"**
+3. Masukkan kode: **`HALL-OJHR`**
+
+> ⚠️ Hapus folder `auth_info_baileys` dulu sebelum jalankan jika sebelumnya sudah pernah login!
 
 ---
 
-## Deploy ke Railway
+## Menu Interaktif — Cara Kerja
 
-### Tambah Environment Variables
-| Variable | Nilai |
-|----------|-------|
-| `PHONE_NUMBER` | `628xxxxxxxxxx` |
-
-### Jalankan install script di Railway
-Tambahkan di `railway.toml` atau custom build command:
-```toml
-[build]
-builder = "nixpacks"
-
-[build.nixpacksPlan.phases.setup]
-cmds = ["npm install", "cd baileys-src && npm install --legacy-peer-deps && cd .."]
-```
-
----
-
-## Cara Kerja Menu Interaktif
-
-### List Message (Support)
-Pengguna dengan WhatsApp versi terbaru akan melihat:
-- Tombol **"📋 Lihat Layanan"** → klik → muncul daftar menu interaktif
-- Bisa pilih dengan tap, tidak perlu ketik angka
-
-### Teks Fallback (Tidak Support)
-Pengguna dengan WhatsApp lama / WhatsApp Web akan menerima:
-- Teks menu biasa dengan format angka 1-12
-- Tetap bisa menggunakan semua fitur bot
-
-### Menu yang Sudah Interaktif
 | Menu | Tipe |
 |------|------|
-| Menu Utama | List Message (3 section) |
-| Persyaratan Surat | List Message (2 section) |
-| Kategori Pengaduan | List Message |
-| Pilih Kelurahan | List Message |
-| Wisata Medan Johor | List Message |
+| Menu Utama | List Message (3 section, 13 pilihan) |
+| Persyaratan Surat | List Message (2 section, 14 pilihan) |
+| Kategori Pengaduan | List Message (8 kategori) |
+| Pilih Kelurahan | List Message (6 kelurahan) |
+| Wisata Medan Johor | List Message (4 kategori) |
+
+**Fallback otomatis:** Jika device tidak support list message (WA lama / WA Web),
+bot kirim teks biasa secara otomatis — tidak perlu konfigurasi apapun.
 
 ---
 
 ## Troubleshooting
 
-### Error `Cannot find module './baileys/index.js'`
-```bash
-ls baileys-src/lib/index.js  # Pastikan file ada
-```
+### Error `Cannot find module 'libsignal'`
+Pastikan `npm install` sudah dijalankan dari root project (bukan dari `baileys-src/`).
+Package `libsignal` sudah di-alias ke `@otaxayun/libsignal-node` di `package.json`.
 
-### Error `chalk` atau module lain tidak ditemukan
-```bash
-cd baileys-src
-npm install --legacy-peer-deps
-```
+### List menu tidak tampil di HP
+Update WhatsApp ke versi terbaru. Bot akan fallback ke teks jika tidak support.
 
-### Pairing code tidak muncul `HALL-OJHR`
-Pastikan auth lama sudah dihapus:
-```bash
-rm -rf auth_info_baileys
-```
-
-### List message tidak muncul di HP
-- Update WhatsApp ke versi terbaru
-- Bot akan otomatis fallback ke teks biasa jika tidak support
+### Pairing code bukan HALL-OJHR
+Hapus `auth_info_baileys` dan restart bot.
